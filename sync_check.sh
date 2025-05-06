@@ -55,10 +55,10 @@ done | sort > "$tmpdir/remote.txt"
 # Show differences
 echo ""
 echo "❌ Files present on Android but missing or different on remote:"
-comm -23 "$tmpdir/local.txt" "$tmpdir/remote.txt" | tee "$HOME/files_missing.txt"
+comm -23 "$tmpdir/local.txt" "$tmpdir/remote.txt" | tee "$HOME/storage/shared/S3_files_missing.txt"
 
 echo ""
-echo "📄 Report saved to: $HOME/storage/shared/files_missing.txt"
+echo "📄 Report saved to: $HOME/storage/shared/S3_files_missing.txt"
 
 # Clean up
 rm -rf "$tmpdir"
