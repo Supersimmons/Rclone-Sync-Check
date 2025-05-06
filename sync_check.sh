@@ -6,6 +6,12 @@ dest="remote:bucket/path"  # or any S3-compatible remote path
 tmpdir="$HOME/.tmp_rclone_check"
 mkdir -p "$tmpdir"
 
+# Function to convert bytes to human-readable format
+human_size() {
+  num=$1
+  awk -v n="$num" 'function human(x){s="BKMGTPEZY";while(x>=1024&&l<length(s)){x/=1024;l++}return sprintf("%.2f %sB",x,substr(s,l+1,1))} BEGIN{print human(n)}'
+}
+
 echo "⏳ Scanning files..."
 
 # Local Android counters
@@ -27,11 +33,11 @@ remote_size=$(echo "$json" | grep -o '"bytes":[0-9]*' | cut -d: -f2)
 echo ""
 echo "📱 On Android:"
 echo "  File count: $local_count"
-echo "  Used space: $local_size B"
+echo "  Used space: $(human_size "$local_size")"
 
 echo "☁️ On remote (S3-compatible):"
 echo "  File count: $remote_count"
-echo "  Used space: $remote_size B"
+echo "  Used space: $(human_size "$remote_size")"
 
 # Basic comparison
 [ "$local_count" != "$remote_count" ] && echo "⚠️ WARNING: File count does not match!"
@@ -57,8 +63,11 @@ echo ""
 echo "❌ Files present on Android but missing or different on remote:"
 comm -23 "$tmpdir/local.txt" "$tmpdir/remote.txt" | tee "$HOME/storage/shared/S3_files_missing.txt"
 
+missing_count=$(wc -l < "$HOME/storage/shared/S3_files_missing.txt")
+
 echo ""
 echo "📄 Report saved to: $HOME/storage/shared/S3_files_missing.txt"
+echo "✅ Comparison complete. $missing_count file(s) are missing or different on the remote."
 
 # Clean up
 rm -rf "$tmpdir"
